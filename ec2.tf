@@ -14,13 +14,24 @@ resource "aws_key_pair" "pubkey" {
 }
 
 resource "aws_security_group" "ssh-sg" {
-  name = "ssh-tf-sg"
+  vpc_id = aws_vpc.main.id
+  name   = "ssh-tf-sg"
 
   ingress {
     description = "SSH connection"
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  # Allows pinging the instance
+  # https://github.com/hashicorp/terraform/issues/1313#issuecomment-107619807
+  ingress {
+    description = "ICMP - ping"
+    from_port   = 8
+    to_port     = 0
+    protocol    = "icmp"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
@@ -32,16 +43,27 @@ resource "aws_security_group" "ssh-sg" {
   }
 
   tags = {
-    Name = "allow_ssh"
+    Name = "Allowing SSH and ICMP"
   }
 }
 
 resource "aws_instance" "vm" {
-  ami           = data.aws_ami.amazon_linux.id
-  instance_type = "t2.micro"
-  key_name      = aws_key_pair.pubkey.key_name
+  ami                    = data.aws_ami.amazon_linux.id
+  instance_type          = "t2.micro"
+  key_name               = aws_key_pair.pubkey.key_name
+  subnet_id              = aws_subnet.public.id
+  vpc_security_group_ids = [aws_security_group.ssh-sg.id]
 
   tags = {
-    Name = "Społeczeństwo-informacyne"
+    Name = "SI instance"
+  }
+}
+
+resource "aws_eip" "public_ip" {
+  instance = aws_instance.vm.id
+  vpc      = true
+
+  tags = {
+    Name = "SI public IP"
   }
 }
