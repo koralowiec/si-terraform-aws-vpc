@@ -10,7 +10,7 @@ data "aws_ami" "amazon_linux" {
 
 resource "aws_key_pair" "pubkey" {
   key_name   = "public-key-tf"
-  public_key = ""
+  public_key = var.pub_key
 }
 
 resource "aws_security_group" "ssh-sg" {
@@ -49,7 +49,7 @@ resource "aws_security_group" "ssh-sg" {
 
 resource "aws_instance" "vm" {
   ami                    = data.aws_ami.amazon_linux.id
-  instance_type          = "t2.micro"
+  instance_type          = var.ec2_instance_type
   key_name               = aws_key_pair.pubkey.key_name
   subnet_id              = aws_subnet.public.id
   vpc_security_group_ids = [aws_security_group.ssh-sg.id]
@@ -66,4 +66,8 @@ resource "aws_eip" "public_ip" {
   tags = {
     Name = "SI public IP"
   }
+}
+
+output "ec2_instance_public_ip" {
+  value = aws_instance.vm.public_ip
 }

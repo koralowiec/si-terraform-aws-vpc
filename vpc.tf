@@ -1,7 +1,7 @@
 # Net and subnets definitions
 
 resource "aws_vpc" "main" {
-  cidr_block = "10.0.0.0/16"
+  cidr_block = var.vpc_cidr
 
   tags = {
     Name = "SI VPC"
@@ -10,7 +10,7 @@ resource "aws_vpc" "main" {
 
 resource "aws_subnet" "public" {
   vpc_id     = aws_vpc.main.id
-  cidr_block = "10.0.1.0/24"
+  cidr_block = var.public_subnet_cidr
 
   tags = {
     Name = "Public subnet"
@@ -19,7 +19,7 @@ resource "aws_subnet" "public" {
 
 resource "aws_subnet" "private" {
   vpc_id     = aws_vpc.main.id
-  cidr_block = "10.0.0.0/24"
+  cidr_block = var.private_subnet_cidr
 
   tags = {
     Name = "Private subnet"
