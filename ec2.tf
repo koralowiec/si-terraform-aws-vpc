@@ -54,6 +54,8 @@ resource "aws_instance" "vm" {
   subnet_id              = aws_subnet.public.id
   vpc_security_group_ids = [aws_security_group.ssh-sg.id]
 
+  user_data = "${file("install_psql_client.sh")}"
+
   tags = {
     Name = "SI instance"
   }
@@ -69,5 +71,5 @@ resource "aws_eip" "public_ip" {
 }
 
 output "ec2_instance_public_ip" {
-  value = aws_instance.vm.public_ip
+  value = aws_eip.public_ip.public_ip
 }
